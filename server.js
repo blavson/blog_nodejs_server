@@ -46,14 +46,18 @@ app.get('/blog/:slug', (req, res) => {
 
 app.post('/blog', (req, res) => {
   console.log(req.body)
-  let {slug, body} = req.body
-  slug=slugify(slug)
-  const sql = `INSERT INTO posts (slug, body) VALUES ('${slug}','${body}')`;
+  let {title, body, tags} = req.body
+  slug=slugify(title)
+  const sql = `INSERT INTO posts (id, slug, body, tags) VALUES (1, "${slug}","${body}", "${tags}")`;
   con.query(sql,  (err, result) => {
-    if (err) throw err;
-    console.log(sql);
+    if (err)  {
+        res.status(500).send('error')
+        console.dir(err)
+    }
+      else 
+        res.status(201).send('success')
   });
-   res.send('Blog Post')
+  
  })
 
 
