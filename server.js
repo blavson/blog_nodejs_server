@@ -1,77 +1,33 @@
 const express = require('express')
 const cors = require('cors')
-const qs = require('qs')
 const bodyParser = require('body-parser');
-const mysql = require('mysql'); 
-const { default: slugify } = require('slugify');
+const db = require('./mysql_connection')
+
 const url = require('url');
+
 app = express()
+
+
 const port = 8000
 
 
+const blogRoute = require('./Routes/blog')
+const authRoute = require('./Routes/auth')
+
 app.use(cors())
 app.use(bodyParser.json());
-require('dotenv').config()
 
-const con = mysql.createConnection({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  database : process.env.MYSQL_DB,
-  password: process.env.MYSQL_PASSWORD
-});
 
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected to MYSQL server! "  + process.env.MYSQL_DB);
-});
+
+app.use('/', blogRoute)
+app.use('/user', authRoute)
+
+
+
+
 
 app.get('/', (req, res) => {
   res.send('Hello')
-})
-
-app.get('/blog', (req, res) => {
- console.log(qs.parse(req.query));
-  res.send('Blog get')
-})
-
-app.get('/blog/:slug', (req, res) => {
-  let slug = req.url
-  slug = slug.replace('/blog/', '')
-  const query = `SELECT * FROM posts WHERE slug ='${slug}'`;
-  con.query(query, (err, result, fields) => {
-    if (err) throw err;
-    res.send(result)
-  });
-})
-
-app.post('/blog', (req, res) => {
-  console.log(req.body)
-  let {title, body, tags} = req.body
-  slug=slugify(title)
-  const sql = `INSERT INTO posts (id, slug, body, tags) VALUES (1, "${slug}","${body}", "${tags}")`;
-  con.query(sql,  (err, result) => {
-    if (err)  {
-        res.status(500).send('error')
-        console.dir(err)
-    }
-      else 
-        res.status(201).send('success')
-  });
-  
- })
-
-
- app.post('/user', (req, res) => {
-  console.log(req.body)
-})
-
-app.get('/user', (req,res) => {
-  const username = req.query.username;
-  const sql = `SELECT * FROM users WHERE name like '${username}%'`
-  con.query(sql, (err, result) => {
-    if (err) throw err;
-    res.send(JSON.stringify(result))
-  })
 })
 
 app.listen(port , () => {
