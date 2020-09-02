@@ -1,12 +1,19 @@
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser');
-const db = require('./mysql_connection')
+const connection = require('./myconn')
 
-const url = require('url');
 
 app = express()
+app.use(express.json())
+app.use(cors({origin: true, credentials: true}));
 
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+     next();
+  });
 
 const port = 8000
 
@@ -14,15 +21,13 @@ const port = 8000
 const blogRoute = require('./Routes/blog')
 const authRoute = require('./Routes/auth')
 
-app.use(cors())
 app.use(bodyParser.json());
-
-
-
 app.use('/', blogRoute)
 app.use('/user', authRoute)
 
-
+connection.connect( () => {
+  console.log("Connected to MySQL ...")
+})
 
 
 

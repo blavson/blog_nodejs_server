@@ -1,47 +1,59 @@
 const router = require('express').Router()
 const jwt = require('jsonwebtoken')
-const  db = require('../mysql_connection')
+const  connection = require('../myconn')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 
 router.post('/signup',   async(req, res) => {
   let { username , email, password} = req.body;
-  //const sql = "SELECT  name FROM users WHERE name ='" + username +"'";
-    const result = await db.table("users").findSingle({name:username})
-
-    if (typeof result !== 'undefined') {
+  const sql = "SELECT  name FROM users WHERE name =" + connection.escape(username);
+   connection.query(sql, (error, result, fields) => {
+    if (error) 
+      return res.status(400).send("DB Problem");
+    console.log(result)
+    if (result.length  > 0 ) {
       return res.status(400).send("User exists");
     }
-    const salt = bcrypt.genSaltSync(saltRounds);
-    const hash = bcrypt.hashSync(password, salt);
+  })  
+  
+    try {
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hash = bcrypt.hashSync(password, salt);
+      const sql = "INSERT INTO users VALUES(0, " + connection.escape(username) +"," 
+                                                 + connection.escape(email) + ","
+                                                 + "NOW(), " + connection.escape(hash) + ","
+                                                 + "NULL, NOW(), NOW())";
+      connection.query(sql, (error, result, fields) => {
+        if (error) throw(error);
+        console.log(result)
+      })                            
+      const token = jwt.sign({ email : email }, 'whatever');
+      console.log(token);
+      return res.status(200).send(token)
 
-    const new_user = { name : username, email, password: hash}
-    const rslt = await db.table("users").save(new_user) 
-    if (rslt) {
-      const token =  jwt.sign({ email }, 'whatever');
-      return res.status(201).send({email, token})
-    } else {
-      return res.status(500).send("Database Error")
+  } catch(err) {
+    console.log(err);
+  }
+})
+
+  router.post('/login', async(req, res) => {
+    let { email, password} = req.body
+    query = "SELECT email FROM users WHERE email =" + connection.escape(email);
+    connection.query(query, async (error, user, fields) => {
+      if (!user) 
+      return res.status(400).send("Username or password doesn't match")  
+          const match = await bcrypt.compare(password, user.password)
+    if (!match) {
+      return res.status(400).send("Wrong username or password")
     }
+    return res.status(200).send("success")
+    })
+    
   })
-    //if (result.length === 0) {
-      // const sql1 = `INSERT INTO users values(0, '${username}', '${email}', NULL, PASSWORD('${password}'), NULL, NOW(), NOW())`;
-      // con.query(sql1, (err, result) => {
-      //   if (err) throw err;
-      //   const token =  jwt.sign({ username, email }, 'whatever');
-      //   res.status(201).send({
-      //     success : true,
-      //     email :email,
-      //     token : token
-      //   })
-      // })
-   
-      
-  //  }
 
 verifyToken = (req, res, next)=> {
-  const bearerHeader = req.headers['authorization']
+  const bearerHeader = req.headers['Authorization']
   if (typeof bearerHeader !== 'undefined') {
     const bearer = bearerHeader.split(' ')
     const bearerToken =  bearer[1]

@@ -1,9 +1,8 @@
 const mysql = require('mysql')
-const wrapper = require('node-mysql-wrapper')
 
 require('dotenv').config()
 
-const con = mysql.createConnection({
+const connection = mysql.createConnection({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
   database : process.env.MYSQL_DB,
@@ -11,9 +10,5 @@ const con = mysql.createConnection({
 });
 
 
- const db = wrapper.wrap(con)
 
- db.ready(async () =>{
- })
-
-module.exports=db
+module.exports=connection

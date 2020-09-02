@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { default: slugify } = require('slugify');
 const verifyToken= require('./auth')
-const  {runQuery} = require('../mysql_connection')
+const  {connection} = require('../myconn')
 
 router.get('/', (req, res) => {
    res.send('Blog get')
@@ -11,9 +11,6 @@ router.get('/', (req, res) => {
    let slug = req.url
    slug = slug.replace('/blog/', '')
    const query = `SELECT * FROM posts WHERE slug ='${slug}'`;
-    runQuery(query,(err, result) => {
-      
-    })
  })
  
   app.post('/', verifyToken, (req, res) => {
@@ -21,9 +18,6 @@ router.get('/', (req, res) => {
    let {title, body, tags} = req.body
    slug=slugify(title)
    const sql = `INSERT INTO posts (id, slug, body, tags) VALUES (1, "${slug}","${body}", "${tags}")`;
-   runQuery(sql, (err, result)=> {
-
-   })
 /*   
    con.query(sql,  (err, result) => {
      if (err)  {
