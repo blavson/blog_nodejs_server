@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 
-router.post('/signup',   async(req, res) => {
+router.post('/signup',  async(req, res) => {
   let { username , email, password} = req.body;
   const sql = "SELECT  name FROM users WHERE name =" + connection.escape(username);
    connection.query(sql, (error, result, fields) => {
@@ -28,9 +28,8 @@ router.post('/signup',   async(req, res) => {
         if (error) throw(error);
         console.log(result)
       })                            
-      const token = jwt.sign({ email : email }, 'whatever');
-      console.log(token);
-      return res.status(200).send(token)
+
+      return res.sendStatus(200).send("Signed up")
 
   } catch(err) {
     console.log(err);
@@ -39,34 +38,28 @@ router.post('/signup',   async(req, res) => {
 
   router.post('/login', async(req, res) => {
     let { email, password} = req.body
-    query = "SELECT email FROM users WHERE email =" + connection.escape(email);
-    connection.query(query, async (error, user, fields) => {
-      if (!user) 
-      return res.status(400).send("Username or password doesn't match")  
-          const match = await bcrypt.compare(password, user.password)
-    if (!match) {
-      return res.status(400).send("Wrong username or password")
-    }
-    return res.status(200).send("success")
+    query = "SELECT * FROM users WHERE email =" + connection.escape(email);
+    connection.query(query, async (error, results, fields) => {
+    try {  
+        if (!results) 
+          res.sendStatus(401).send("email or password doesn't match") 
+        const match = await bcrypt.compare(password, results[0].password)
+        if (!match) 
+           res.sendStatus(402).send("password doesn't match") 
+         const _id = await results[0].id
+         const token =  jwt.sign({ email : email }, 'whatever');
+        return  res.header('Authorization','Bearer ' +  token).send({_id, token})
+    } catch (error) {
+        console.log(error)
+         res.sendStatus(407).send("Wrong email or password")
+    }     
     })
-    
   })
 
-verifyToken = (req, res, next)=> {
-  const bearerHeader = req.headers['Authorization']
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(' ')
-    const bearerToken =  bearer[1]
-    req.token = bearerToken
-    next()
-  }
-  else {
-    res.status(403).send("Now way")
-  }
-}
 
 
-router.get('/home', verifyToken , (req, res) => {
+
+router.get('/home',  (req, res) => {
   jwt.verify(req.token, 'whatever', (err, data) => {
       if (err) {
         res.send.status(403)
@@ -75,4 +68,4 @@ router.get('/home', verifyToken , (req, res) => {
   }
   })
 })
-module.exports=  router , verifyToken 
+module.exports=router 

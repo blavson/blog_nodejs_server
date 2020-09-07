@@ -3,10 +3,14 @@ const cors = require('cors')
 const bodyParser = require('body-parser');
 const connection = require('./myconn')
 
+const myAuth = require('./Routes/authorize')
 
 app = express()
 app.use(express.json())
 app.use(cors({origin: true, credentials: true}));
+
+const blogRoute = require('./Routes/blog')
+const authRoute = require('./Routes/auth')
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -17,12 +21,8 @@ app.use(function(req, res, next) {
 
 const port = 8000
 
-
-const blogRoute = require('./Routes/blog')
-const authRoute = require('./Routes/auth')
-
 app.use(bodyParser.json());
-app.use('/', blogRoute)
+app.use('/blog',  blogRoute)
 app.use('/user', authRoute)
 
 connection.connect( () => {
