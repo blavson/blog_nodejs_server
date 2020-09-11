@@ -5,20 +5,19 @@ const  connection = require('../myconn')
 const LoremIpsum = require("lorem-ipsum").LoremIpsum
 
 router.get('/', (req, res) => {
-  console.log("All blogs")
-   res.send('All blogs')
- })
 
- router.get('/create', myAuth, (req, res) => {
-  console.log("blog create")
-   res.send('Blog create')
  })
  
  
  router.get('/:slug', (req, res) => {
-   let slug = req.url
-   slug = slug.replace('/blog/', '')
+   let slug =  req.url.replace(/^\//, '')
    const query = `SELECT * FROM posts WHERE slug ='${slug}'`;
+   connection.query(query, async (error, result, fields) => {
+    if (result) 
+     return res.status(201).send(result)
+    else 
+    return res.status(400).send("can't find the post")
+   }) 
  })
  
   router.post('/',  (req, res) => {
@@ -52,11 +51,13 @@ router.get('/', (req, res) => {
    // const sql = "INSERT INTO posts (id, slug, body, tags) VALUES "
     let s =''
     for(let i = 0; i < 30; i++) {
-      const slug = slugify(lorem.generateWords(2))
-      const tags = lorem.generateWords(4)
+      const title =lorem.generateWords(8)
+      const slug = slugify(title)
+      
+      const tags = lorem.generateWords(6)
       const body =lorem.generateParagraphs(7)
       // ${id}, "${slug}","${body}", "${tags}"`;
-      const sql = "INSERT INTO posts (id, slug, body, thumbnail, tags) VALUES (1," + connection.escape(slug) + "," + connection.escape(body) + ", " +  "'http://lorempixel.com/400/400/'" + "," + connection.escape(tags) +")"
+      const sql = "INSERT INTO posts (id, title, slug, body, thumbnail, tags) VALUES (1," +  connection.escape(title) + "," + connection.escape(slug) + "," + connection.escape(body) + ", " +  "'http://lorempixel.com/400/400/'" + "," + connection.escape(tags) +")"
       connection.query(sql, async (error, result, fields) => {
 
        })

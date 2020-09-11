@@ -32,7 +32,20 @@ connection.connect( () => {
 
 
 app.get('/', (req, res) => {
-  res.send('Hello')
+  const query = "SELECT * FROM posts ORDER BY created_at DESC LIMIT 20"
+  connection.query(query,  (error, results, fields) => {
+    if (results) {
+      console.log(results);
+     return res.status(201).send(JSON.stringify(results))
+    }
+    else 
+    return res.status(400).send("NO POSTS FOR NOW")
+   })
+ })
+
+ app.get('/create', myAuth, (req, res) => {
+  console.log("blog create")
+   res.send('Blog create')
 })
 
 app.listen(port , () => {
