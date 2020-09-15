@@ -11,10 +11,11 @@ router.get('/', (req, res) => {
  
  router.get('/:slug', (req, res) => {
    let slug =  req.url.replace(/^\//, '')
-   const query = `SELECT * FROM posts WHERE slug ='${slug}'`;
+   const query = `SELECT * FROM posts JOIN users ON posts.user_id = users.id WHERE slug ='${slug}' LIMIT 1`;
+   console.log(query);
    connection.query(query, async (error, result, fields) => {
     if (result) 
-     return res.status(201).send(result)
+     return res.status(201).send(result[0])
     else 
     return res.status(400).send("can't find the post")
    }) 
@@ -24,7 +25,7 @@ router.get('/', (req, res) => {
    console.log(req.body)
    let {id, title, body, tags} = req.body
    slug=slugify(title)
-   const sql = `INSERT INTO posts (id, slug, body, tags) VALUES (${id}, "${slug}","${body}", "${tags}")`;
+   const sql = `INSERT INTO posts (user_id, slug, body, tags) VALUES (${id}, "${slug}","${body}", "${tags}")`;
    console.log(sql);
    connection.query(sql, async (error, result, fields) => {
     if (result) 
@@ -57,7 +58,7 @@ router.get('/', (req, res) => {
       const tags = lorem.generateWords(6)
       const body =lorem.generateParagraphs(7)
       // ${id}, "${slug}","${body}", "${tags}"`;
-      const sql = "INSERT INTO posts (id, title, slug, body, thumbnail, tags) VALUES (1," +  connection.escape(title) + "," + connection.escape(slug) + "," + connection.escape(body) + ", " +  "'http://lorempixel.com/400/400/'" + "," + connection.escape(tags) +")"
+      const sql = "INSERT INTO posts (user_id, title, slug, body, thumbnail, tags) VALUES (1," +  connection.escape(title) + "," + connection.escape(slug) + "," + connection.escape(body) + ", " +  "'http://lorempixel.com/400/400/'" + "," + connection.escape(tags) +")"
       connection.query(sql, async (error, result, fields) => {
 
        })

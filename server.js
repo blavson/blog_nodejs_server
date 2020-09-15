@@ -11,6 +11,7 @@ app.use(cors({origin: true, credentials: true}));
 
 const blogRoute = require('./Routes/blog')
 const authRoute = require('./Routes/auth')
+const myAuthor = require('./Routes/author')
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -24,6 +25,7 @@ const port = 8000
 app.use(bodyParser.json());
 app.use('/blog',  blogRoute)
 app.use('/user', authRoute)
+app.use('/author', myAuthor)
 
 connection.connect( () => {
   console.log("Connected to MySQL ...")
@@ -32,7 +34,7 @@ connection.connect( () => {
 
 
 app.get('/', (req, res) => {
-  const query = "SELECT * FROM posts ORDER BY created_at DESC LIMIT 20"
+  const query = "SELECT posts.*, users.name  FROM posts JOIN users ON posts.user_id = users.id ORDER BY posts.created_at DESC LIMIT 20"
   connection.query(query,  (error, results, fields) => {
     if (results) {
       console.log(results);
