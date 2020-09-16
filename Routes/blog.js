@@ -10,7 +10,8 @@ router.get('/', (req, res) => {
  
  
  router.get('/:slug', (req, res) => {
-   let slug =  req.url.replace(/^\//, '')
+  //  let slug =  req.url.replace(/^\//, '')
+   let slug = req.params.slug;
    const query = `SELECT * FROM posts JOIN users ON posts.user_id = users.id WHERE slug ='${slug}' LIMIT 1`;
    console.log(query);
    connection.query(query, async (error, result, fields) => {
